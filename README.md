@@ -1,6 +1,6 @@
 # MarkSix
 
-Python tool to generate Mark Six (六合彩) number suggestions using Hong Kong Jockey Club historical draw data.
+Python tool and web app to generate Mark Six (六合彩) number suggestions using Hong Kong Jockey Club historical draw data.
 
 ## Setup
 
@@ -8,7 +8,47 @@ Python tool to generate Mark Six (六合彩) number suggestions using Hong Kong 
 pip install -r requirements.txt
 ```
 
-## Usage
+## Web app
+
+```bash
+python app.py
+```
+
+Open [http://localhost:5000](http://localhost:5000) in your browser.
+
+Use the form to pick a strategy, number of draws to analyze, and how many tickets to generate. Results show the latest HKJC draw, top-scored numbers, and suggested combinations with colored balls.
+
+## Deploy to Vercel (production)
+
+Vercel supports Flask with zero configuration when `app.py` exports a variable named `app`.
+
+### Option A: Deploy from GitHub (recommended)
+
+1. Push this repo to GitHub.
+2. Go to [vercel.com/new](https://vercel.com/new) and import the repository.
+3. Vercel auto-detects Flask. Leave **Build Command** and **Output Directory** empty.
+4. Click **Deploy**.
+
+Your site will be live at `https://your-project.vercel.app`.
+
+### Option B: Deploy with the Vercel CLI
+
+```bash
+npm i -g vercel
+cd c:\Users\Sin\Documents\GitHub\MarkSix
+vercel
+```
+
+Follow the prompts. Use `vercel --prod` for production.
+
+### Production notes
+
+- **Cache**: On Vercel, draw cache is stored in `/tmp` (per server instance, not permanent). First request after a cold start may take a few seconds while HKJC data is fetched.
+- **Cold starts**: Serverless functions can have a short delay when idle.
+- **Dependencies**: `requirements.txt` is installed automatically during deploy.
+- **No `app.run()` on Vercel**: Vercel runs the Flask `app` as a serverless function; you do not need to start a local server in production.
+
+## CLI
 
 ```bash
 python generate_marksix.py
@@ -30,13 +70,9 @@ python generate_marksix.py --strategy overdue --seed 42
 ## How it works
 
 1. Fetches recent Mark Six results from the HKJC GraphQL API
-2. Scores each number (1–49) using:
-   - **Frequency** — weighted recent appearance rate
-   - **Gap** — how overdue a number is vs its historical average gap
-   - **Pairs** — numbers that often appear together
-   - **Balance** — odd/even, low/high, zone spread patterns seen in real draws
-3. Generates ticket combinations that score highly while matching typical draw balance
+2. Scores each number (1-49) using frequency, gap analysis, pair co-occurrence, and draw balance patterns
+3. Generates ticket combinations that score highly while matching typical draw structure
 
 ## Disclaimer
 
-Mark Six is a game of chance. Each draw is independent and every combination has the same true probability. This script identifies patterns in past data for entertainment and analysis — it does **not** guarantee wins or beat the odds.
+Mark Six is a game of chance. Each draw is independent and every combination has the same true probability. This tool identifies patterns in past data for entertainment and analysis - it does **not** guarantee wins or beat the odds.

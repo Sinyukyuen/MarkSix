@@ -5,46 +5,12 @@ from __future__ import annotations
 
 import argparse
 import sys
-from textwrap import dedent
 
-from marksix.analysis import analyze_numbers
-from marksix.data import get_draw_history
-from marksix.generator import generate_tickets
-
-STRATEGIES = ("ensemble", "hot", "cold", "overdue", "balanced")
-
-DISCLAIMER = dedent(
-    """
-    Mark Six is a random lottery. This tool uses historical draw patterns
-    (frequency, gaps, pairs, balance) to suggest combinations - it cannot
-    guarantee a win or improve true odds beyond random selection.
-    """
-).strip()
+from marksix.service import DISCLAIMER, STRATEGIES, generate_predictions
 
 
 def _format_numbers(numbers: tuple[int, ...]) -> str:
     return ", ".join(f"{number:02d}" for number in numbers)
-
-
-def _print_top_numbers(stats, limit: int = 15) -> None:
-    print("\nTop numbers by composite score:")
-    print(f"{'No.':>4}  {'Freq':>5}  {'Gap':>4}  {'Pair':>5}  {'Score':>6}")
-    print("-" * 34)
-    for item in stats[:limit]:
-        print(
-            f"{item.number:4d}  {item.frequency:5d}  {item.gap:4d}  "
-            f"{item.pair_strength:5.2f}  {item.composite_score:6.3f}"
-        )
-
-
-def _print_tickets(tickets) -> None:
-    print("\nSuggested tickets:")
-    for index, ticket in enumerate(tickets, start=1):
-        print(
-            f"  {index}. [{_format_numbers(ticket.numbers)}]  "
-            f"+ special {ticket.special:02d}  "
-            f"(score {ticket.ticket_score:.2f}, balance {ticket.balance:.2f})"
-        )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -100,36 +66,42 @@ def main(argv: list[str] | None = None) -> int:
     print()
 
     try:
-        draws = get_draw_history(
+        result = generate_predictions(
             lookback_draws=args.draws,
+            ticket_count=args.tickets,
+            strategy=args.strategy,
+            seed=args.seed,
             refresh=args.refresh,
             use_cache=not args.no_cache,
         )
     except Exception as exc:
-        print(f"Failed to fetch draw history: {exc}", file=sys.stderr)
+        print(f"Failed to generate predictions: {exc}", file=sys.stderr)
         return 1
 
-    if not draws:
-        print("No draw data available.", file=sys.stderr)
-        return 1
-
-    latest = draws[0]
+    latest = result["latest_draw"]
     print(
-        f"Loaded {len(draws)} draws. Latest: {latest.draw_id} "
-        f"({latest.draw_date.date()}) -> {_format_numbers(latest.numbers)} + {latest.special:02d}"
-    )
-
-    stats = analyze_numbers(draws, strategy=args.strategy)
-    tickets = generate_tickets(
-        stats,
-        strategy=args.strategy,
-        count=args.tickets,
-        seed=args.seed,
+        f"Loaded {result['draw_count']} draws. Latest: {latest['draw_id']} "
+        f"({latest['draw_date']}) -> {_format_numbers(tuple(latest['numbers']))} + {latest['special']:02d}"
     )
 
     print(f"\nStrategy: {args.strategy}")
-    _print_top_numbers(stats)
-    _print_tickets(tickets)
+    print("\nTop numbers by composite score:")
+    print(f"{'No.':>4}  {'Freq':>5}  {'Gap':>4}  {'Pair':>5}  {'Score':>6}")
+    print("-" * 34)
+    for item in result["top_numbers"]:
+        print(
+            f"{item['number']:4d}  {item['frequency']:5d}  {item['gap']:4d}  "
+            f"{item['pair_strength']:5.2f}  {item['composite_score']:6.3f}"
+        )
+
+    print("\nSuggested tickets:")
+    for index, ticket in enumerate(result["tickets"], start=1):
+        numbers = _format_numbers(tuple(ticket["numbers"]))
+        print(
+            f"  {index}. [{numbers}]  "
+            f"+ special {ticket['special']:02d}  "
+            f"(score {ticket['ticket_score']:.2f}, balance {ticket['balance']:.2f})"
+        )
     return 0
 
 

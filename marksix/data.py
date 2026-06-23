@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -11,7 +12,12 @@ from typing import Iterable
 import requests
 
 HKJC_GRAPHQL_URL = "https://info.cld.hkjc.com/graphql/base/"
-CACHE_PATH = Path(__file__).resolve().parent.parent / "data" / "draws_cache.json"
+
+
+def _cache_path() -> Path:
+    if os.environ.get("VERCEL"):
+        return Path("/tmp/marksix_draws_cache.json")
+    return Path(__file__).resolve().parent.parent / "data" / "draws_cache.json"
 
 GRAPHQL_QUERY = """fragment lotteryDrawsFragment on LotteryDraw {
     id
@@ -172,9 +178,10 @@ def _dedupe_draws(draws: Iterable[Draw]) -> list[Draw]:
 
 
 def load_cached_draws() -> list[Draw]:
-    if not CACHE_PATH.exists():
+    cache_path = _cache_path()
+    if not cache_path.exists():
         return []
-    with CACHE_PATH.open(encoding="utf-8") as handle:
+    with cache_path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     return [
         Draw(
@@ -190,7 +197,8 @@ def load_cached_draws() -> list[Draw]:
 
 
 def save_cached_draws(draws: list[Draw]) -> None:
-    CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    cache_path = _cache_path()
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
     payload = [
         {
             "draw_id": draw.draw_id,
@@ -202,7 +210,7 @@ def save_cached_draws(draws: list[Draw]) -> None:
         }
         for draw in draws
     ]
-    with CACHE_PATH.open("w", encoding="utf-8") as handle:
+    with cache_path.open("w", encoding="utf-8") as handle:
         json.dump(payload, handle, indent=2)
 
 

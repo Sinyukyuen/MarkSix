@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.vercel
+data/draws_cache.json

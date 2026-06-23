@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Six Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-badge">六合彩 Mark Six</div>
+      <h1>Number Generator</h1>
+      <p class="hero-sub">Statistical suggestions from HKJC historical draw data</p>
+    </header>
+
+    <section class="panel controls">
+      <form id="generate-form" class="control-grid">
+        <label class="field">
+          <span>Strategy</span>
+          <select id="strategy" name="strategy">
+            {% for strategy in strategies %}
+            <option value="{{ strategy }}"{% if strategy == 'ensemble' %} selected{% endif %}>
+              {{ strategy | capitalize }}
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Draws to analyze <strong id="draws-value">300</strong></span>
+          <input type="range" id="draws" name="draws" min="50" max="500" step="50" value="300">
+        </label>
+
+        <label class="field">
+          <span>Tickets <strong id="tickets-value">5</strong></span>
+          <input type="range" id="tickets" name="tickets" min="1" max="10" step="1" value="5">
+        </label>
+
+        <label class="field">
+          <span>Seed (optional)</span>
+          <input type="number" id="seed" name="seed" placeholder="Random" min="0">
+        </label>
+
+        <label class="field checkbox-field">
+          <input type="checkbox" id="refresh" name="refresh">
+          <span>Refresh data from HKJC</span>
+        </label>
+
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span class="btn-label">Generate Numbers</span>
+          <span class="spinner" hidden></span>
+        </button>
+      </form>
+    </section>
+
+    <p class="disclaimer" id="disclaimer">
+      Mark Six is a random lottery. Past patterns do not guarantee future results.
+    </p>
+
+    <div id="error" class="error-banner" hidden></div>
+
+    <section id="results" class="results" hidden>
+      <div class="panel latest-draw">
+        <h2>Latest Draw</h2>
+        <div class="latest-meta">
+          <span id="latest-id"></span>
+          <span id="latest-date"></span>
+          <span id="draw-count"></span>
+        </div>
+        <div class="ball-row" id="latest-balls"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Top Numbers</h2>
+        <div class="stats-table-wrap">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Ball</th>
+                <th>Freq</th>
+                <th>Gap</th>
+                <th>Pair</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody id="top-numbers"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Suggested Tickets</h2>
+        <div class="ticket-grid" id="ticket-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
