@@ -39,6 +39,5 @@ def api_generate():
     except Exception as exc:
         return jsonify({"error": f"Generation failed: {exc}"}), 500
 
-
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
