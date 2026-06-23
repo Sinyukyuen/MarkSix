@@ -43,6 +43,7 @@ Follow the prompts. Use `vercel --prod` for production.
 
 ### Production notes
 
+- **vercel.json**: Not required. Vercel auto-detects Flask from `app.py` (zero-config).
 - **Cache**: On Vercel, draw cache is stored in `/tmp` (per server instance, not permanent). First request after a cold start may take a few seconds while HKJC data is fetched.
 - **Cold starts**: Serverless functions can have a short delay when idle.
 - **Dependencies**: `requirements.txt` is installed automatically during deploy.
