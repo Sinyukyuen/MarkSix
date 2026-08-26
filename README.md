@@ -1,6 +1,6 @@
 # MarkSix
 
-Python tool and web app to generate Mark Six (六合彩) number suggestions using Hong Kong Jockey Club historical draw data.
+Python tool and web app to generate Mark Six (六合彩) number suggestions — **單式**, **復式**, and **拖膽** — using Hong Kong Jockey Club historical draw data.
 
 ## Setup
 
@@ -14,9 +14,14 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open [http://localhost:5000](http://localhost:5000) in your browser.
+Open [http://localhost:5000](http://localhost:5000) for **選號**, or [http://localhost:5000/backtest](http://localhost:5000/backtest) for **復盤**.
 
-Use the form to pick a strategy, number of draws to analyze, and how many tickets to generate. Results show the latest HKJC draw, top-scored numbers, and suggested combinations with colored balls.
+Use the top nav to switch pages, and the **中文 / EN** toggle for language.
+
+- **投注方式**: 單式 (6 numbers), 復式 (7–12 numbers), or 拖膽 (bankers + trailers)
+- Strategy, draws to analyze, and how many suggestions to generate
+
+Results show the latest HKJC draw, top-scored numbers, units/cost for 復式 & 拖膽, and colored balls.
 
 ## Deploy to Vercel (production)
 

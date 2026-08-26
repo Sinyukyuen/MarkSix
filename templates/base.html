@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}六合彩選號產生器{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=12">
+</head>
+<body data-page="{{ page }}">
+  <div class="page">
+    <div class="top-bar">
+      <nav class="site-nav" aria-label="Main">
+        <a href="{{ url_for('index') }}" class="nav-link{% if page == 'predict' %} active{% endif %}" data-i18n="tabPredict">選號</a>
+        <a href="{{ url_for('backtest_page') }}" class="nav-link{% if page == 'backtest' %} active{% endif %}" data-i18n="tabBacktest">復盤</a>
+      </nav>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="zh" id="lang-zh">中文</button>
+        <button type="button" class="lang-btn" data-lang="en" id="lang-en">EN</button>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="hero-badge" data-i18n="badge">六合彩 Mark Six</div>
+      <h1 data-i18n="{% block hero_title_key %}title{% endblock %}">{% block hero_title %}選號產生器{% endblock %}</h1>
+      <p class="hero-sub" data-i18n="{% block hero_sub_key %}subtitle{% endblock %}">{% block hero_sub %}單式 · 復式 · 拖膽 — 根據馬會歷史開獎數據建議{% endblock %}</p>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <section class="panel prize-panel">
+      <h2 data-i18n="prizeRulesTitle">獲獎資格</h2>
+      <p class="field-hint" data-i18n="prizeRulesIntro">
+        六合彩注項單位為每注港幣10元。複式或膽拖可以每注港幣$5「部份注項單位」投注，獎金按份數計算。
+        每期從49個號碼攪出七個：首六個為「攪出號碼」，第七個為「特別號碼」。
+      </p>
+      <div class="stats-table-wrap">
+        <table class="stats-table prize-table">
+          <thead>
+            <tr>
+              <th data-i18n="prizeCol">獎項</th>
+              <th data-i18n="prizeReq">中獎條件</th>
+              <th data-i18n="prizeAmount">獎金</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for prize in prize_table %}
+            <tr>
+              <td class="prize-name">
+                <span class="lang-zh">{{ prize.name_zh }}</span>
+                <span class="lang-en" hidden>{{ prize.name_en }}</span>
+              </td>
+              <td>
+                <span class="lang-zh">{{ prize.requirement_zh }}</span>
+                <span class="lang-en" hidden>{{ prize.requirement_en }}</span>
+              </td>
+              <td>
+                {% if prize.fixed_prize_hkd %}
+                ${{ "{:,}".format(prize.fixed_prize_hkd) }}
+                {% else %}
+                <span class="lang-zh">{{ prize.note_zh }}</span>
+                <span class="lang-en" hidden>{{ prize.note_en }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/i18n.js') }}?v=12"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=12"></script>
+</body>
+</html>

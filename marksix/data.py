@@ -12,6 +12,7 @@ from typing import Iterable
 import requests
 
 HKJC_GRAPHQL_URL = "https://info.cld.hkjc.com/graphql/base/"
+HISTORY_START = datetime(1993, 1, 1)
 
 
 def _cache_path() -> Path:
@@ -126,7 +127,7 @@ def _post_graphql(variables: dict) -> list[dict]:
             "query": GRAPHQL_QUERY,
         },
         headers=REQUEST_HEADERS,
-        timeout=30,
+        timeout=60,
     )
     response.raise_for_status()
     payload = response.json()
@@ -214,12 +215,36 @@ def save_cached_draws(draws: list[Draw]) -> None:
         json.dump(payload, handle, indent=2)
 
 
+def fetch_all_draws() -> list[Draw]:
+    """Fetch full Mark Six history available from HKJC (since 1993)."""
+    # Prefer a single large lastNDraw request when the API allows it
+    try:
+        recent = fetch_recent_draws(10000)
+        if len(recent) >= 1500:
+            return recent
+    except Exception:
+        pass
+    return fetch_draws_by_date_range(HISTORY_START, datetime.now())
+
+
 def get_draw_history(
     *,
     lookback_draws: int = 300,
     refresh: bool = False,
     use_cache: bool = True,
+    all_history: bool = False,
 ) -> list[Draw]:
+    if all_history:
+        if use_cache and not refresh:
+            cached = load_cached_draws()
+            # Prefer full cache when it looks like a complete history dump
+            if len(cached) >= 2000:
+                return cached
+        draws = fetch_all_draws()
+        if use_cache and draws:
+            save_cached_draws(draws)
+        return draws
+
     if use_cache and not refresh:
         cached = load_cached_draws()
         if len(cached) >= lookback_draws:
@@ -228,7 +253,8 @@ def get_draw_history(
     draws = fetch_recent_draws(lookback_draws)
     if len(draws) < lookback_draws:
         end = datetime.now()
-        start = end - timedelta(days=365 * 3)
+        # Fall back to a long date window, then trim
+        start = max(HISTORY_START, end - timedelta(days=365 * 12))
         draws = fetch_draws_by_date_range(start, end)
         draws = draws[:lookback_draws]
 

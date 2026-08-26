@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}六合彩選號產生器{% endblock %}
+{% block title %}六合彩復盤{% endblock %}
 
-{% block hero_title_key %}title{% endblock %}
-{% block hero_title %}選號產生器{% endblock %}
-{% block hero_sub_key %}subtitle{% endblock %}
-{% block hero_sub %}單式 · 復式 · 拖膽 — 根據馬會歷史開獎數據建議{% endblock %}
+{% block hero_title_key %}backtestTitle{% endblock %}
+{% block hero_title %}復盤比較{% endblock %}
+{% block hero_sub_key %}backtestSubtitle{% endblock %}
+{% block hero_sub %}用歷史數據回測預測，與實際開獎逐期比對{% endblock %}
 
 {% block content %}
     <section class="panel controls">
@@ -38,8 +38,14 @@
         </label>
 
         <label class="field">
-          <span><span data-i18n="suggestions">建議組數</span> <strong id="tickets-value">5</strong></span>
-          <input type="range" id="tickets" name="tickets" min="1" max="10" step="1" value="5">
+          <span><span data-i18n="reviewDraws">復盤期數</span> <strong id="review-value">20</strong></span>
+          <input type="range" id="review-draws" name="review_draws" min="5" max="50" step="5" value="20">
+        </label>
+
+        <label class="field">
+          <span><span data-i18n="showPredictions">顯示預測組數</span> <strong id="show-pred-value">5</strong></span>
+          <input type="range" id="show-predictions" name="show_predictions" min="1" max="10" step="1" value="5">
+          <span class="field-hint" data-i18n="showPredictionsHint">可調至顯示全部預測 #1–#10</span>
         </label>
 
         <label class="field mode-field" data-modes="multiple" hidden>
@@ -60,7 +66,7 @@
         </label>
 
         <button type="submit" class="btn-primary" id="submit-btn">
-          <span class="btn-label" data-i18n="generate">產生號碼</span>
+          <span class="btn-label" data-i18n="runBacktest">開始復盤</span>
           <span class="spinner" hidden></span>
         </button>
       </form>
@@ -72,38 +78,21 @@
 
     <div id="error" class="error-banner" hidden></div>
 
-    <section id="results" class="results" hidden>
-      <div class="panel latest-draw">
-        <h2 data-i18n="latestDraw">最新一期</h2>
-        <div class="latest-meta">
-          <span id="latest-id"></span>
-          <span id="latest-date"></span>
-          <span id="draw-count"></span>
-        </div>
-        <div class="ball-row" id="latest-balls"></div>
+    <section id="backtest-results" class="results" hidden>
+      <div class="panel">
+        <h2 data-i18n="backtestSummary">復盤摘要</h2>
+        <div class="summary-grid" id="backtest-summary"></div>
+        <p class="field-hint" id="backtest-note" data-i18n="backtestNote">
+          每期只用該期之前的歷史數據預測，再與實際開獎比對。
+        </p>
+        <p class="field-hint" data-i18n="improvementNote">
+          追熱門常遜於隨機。自適應會減少重複號碼並分散區段。六合彩本質仍無法被預測打敗。
+        </p>
       </div>
 
       <div class="panel">
-        <h2 data-i18n="topNumbers">熱門號碼</h2>
-        <div class="stats-table-wrap">
-          <table class="stats-table">
-            <thead>
-              <tr>
-                <th data-i18n="ball">號碼</th>
-                <th data-i18n="freq">出現</th>
-                <th data-i18n="gap">間隔</th>
-                <th data-i18n="pair">配對</th>
-                <th data-i18n="score">分數</th>
-              </tr>
-            </thead>
-            <tbody id="top-numbers"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2 id="suggestions-title">建議 單式</h2>
-        <div class="ticket-grid" id="ticket-grid"></div>
+        <h2 data-i18n="backtestDetail">逐期比對</h2>
+        <div class="backtest-list" id="backtest-list"></div>
       </div>
     </section>
 {% endblock %}
